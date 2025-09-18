@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-This file provides comprehensive guidance to Claude Code when working with Next.js 15 applications with React 19 and TypeScript.
+This file provides comprehensive guidance to Claude Code when working with the Workshop Companion App - a demo Next.js application with Pages Router, React 19, TypeScript, RTK Query, and SSR deployment for 5-10 concurrent users.
 
 ## Core Development Philosophy
 
@@ -76,15 +76,15 @@ rg --files -g "*.tsx"
 - **Functions should be short and focused sub 50 lines** and have a single responsibility.
 - **Organize code into clearly separated modules**, grouped by feature or responsibility.
 
-## 🚀 Next.js 15 & React 19 Key Features
+## 🚀 Next.js 15 & React 19 Key Features (Pages Router)
 
-### Next.js 15 Core Features
+### Next.js 15 Core Features for Workshop Companion App (Demo)
 - **Turbopack**: Fast bundler for development (stable)
-- **App Router**: File-system based router with layouts and nested routing
-- **Server Components**: React Server Components for performance
-- **Server Actions**: Type-safe server functions
-- **Parallel Routes**: Concurrent rendering of multiple pages
-- **Intercepting Routes**: Modal-like experiences
+- **Pages Router**: Traditional file-system based routing (as per TDD specification)
+- **SSR Deployment**: Server-side rendering for Heroku deployment
+- **API Routes**: Server-side API endpoints for session management
+- **Image Optimization**: For workshop resources and assets
+- **Session Persistence**: Maintain participant sessions across page refreshes
 
 ### React 19 Features
 - **React Compiler**: Eliminates need for `useMemo`, `useCallback`, and `React.memo`
@@ -112,33 +112,48 @@ function MyComponent(): JSX.Element {  // Cannot find namespace 'JSX'
 }
 ```
 
-## 🏗️ Project Structure (Vertical Slice Architecture)
+## 🏗️ Project Structure (Workshop Companion App - Pages Router)
 
 ```
 src/
-├── app/                   # Next.js App Router
-│   ├── (routes)/          # Route groups
-│   ├── globals.css        # Global styles
-│   ├── layout.tsx         # Root layout
-│   └── page.tsx           # Home page
+├── pages/                 # Next.js Pages Router (TDD specification)
+│   ├── index.tsx          # Landing page (participant join / organizer CTA)
+│   ├── o/                 # Organizer routes
+│   │   ├── login.tsx      # Organizer login
+│   │   └── dashboard.tsx  # Organizer dashboard
+│   └── s/                 # Session routes
+│       └── [code].tsx     # Participant session
 ├── components/            # Shared UI components
 │   ├── ui/                # Base components (shadcn/ui)
-│   └── common/            # Application-specific shared components
-├── features/              # Feature-based modules (RECOMMENDED)
-│   └── [feature]/
-│       ├── __tests__/     # Co-located tests
-│       ├── components/    # Feature components
-│       ├── hooks/         # Feature-specific hooks
-│       ├── api/           # API integration
-│       ├── schemas/       # Zod validation schemas
-│       ├── types/         # TypeScript types
-│       └── index.ts       # Public API
+│   ├── JoinForm.tsx       # Participant join form
+│   ├── OrganizerLoginForm.tsx # Organizer authentication
+│   ├── ModuleViewer.tsx   # Module content display
+│   ├── ProgressBar.tsx    # Workshop progress indicator
+│   ├── NavArrows.tsx      # Module navigation
+│   ├── BackToCurrent.tsx  # Return to current module
+│   ├── EmojiTray.tsx      # Reaction system
+│   ├── ResourcesList.tsx  # Workshop resources
+│   └── EndedStatusPage.tsx # Session end state
+├── lib/api/               # RTK Query slices (TDD specification)
+│   ├── sessionApi.ts      # Participant API (state/modules/react)
+│   └── organizerApi.ts    # Organizer API (login, workshops, control)
+├── store/                 # Redux store + RTK Query config
+│   └── index.ts           # Store configuration
 ├── lib/                   # Core utilities and configurations
-│   ├── utils.ts           # Utility functions
+│   ├── utils.ts           # Utility functions (visibility, polling control)
 │   ├── env.ts             # Environment validation
 │   └── constants.ts       # Application constants
+├── config/                # Configuration files
+│   ├── env.ts             # Environment variables
+│   ├── constants.ts       # App constants
+│   └── errorCodes.ts      # Error code mappings
+├── utils/                 # Utility functions
+│   ├── visibility.ts      # Document visibility detection
+│   ├── polling.ts         # Polling control logic
+│   ├── storage.ts         # Client storage utilities
+│   └── session.ts         # Session persistence management
 ├── hooks/                 # Shared custom hooks
-├── styles/                # Styling files
+├── styles/                # Styling files (Tailwind + globals)
 └── types/                 # Shared TypeScript types
 ```
 
@@ -186,14 +201,18 @@ src/
 
 ## 📦 Package Management & Dependencies
 
-### Essential Next.js 15 Dependencies
+### Essential Dependencies (Workshop Companion App)
 ```json
 {
   "dependencies": {
     "next": "^15.0.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "typescript": "^5.0.0"
+    "typescript": "^5.0.0",
+    "@reduxjs/toolkit": "^2.0.0",
+    "react-redux": "^9.0.0",
+    "react-markdown": "^9.0.0",
+    "rehype-sanitize": "^6.0.0"
   },
   "devDependencies": {
     "@types/node": "^20",
@@ -209,16 +228,23 @@ src/
 }
 ```
 
-### Recommended Additional Dependencies
+### Workshop-Specific Dependencies
 ```bash
-# UI and Styling
+# UI and Styling (shadcn/ui)
 npm install @radix-ui/react-* class-variance-authority clsx tailwind-merge
 
 # Form Handling and Validation
 npm install react-hook-form @hookform/resolvers zod
 
-# State Management (when needed)
-npm install @tanstack/react-query zustand
+# State Management (RTK Query - as per TDD)
+npm install @reduxjs/toolkit react-redux
+
+# Markdown Rendering (TDD requirement)
+npm install react-markdown rehype-sanitize
+
+# Session Management
+npm install js-cookie uuid
+npm install -D @types/js-cookie @types/uuid
 
 # Development Tools
 npm install -D @testing-library/react @testing-library/jest-dom vitest jsdom
@@ -487,59 +513,155 @@ Button.displayName = "Button"
 export { Button, buttonVariants }
 ```
 
-## 🔄 State Management (STRICT HIERARCHY)
+## 🔄 State Management (Workshop Companion App - RTK Query)
 
-### MUST Follow This State Hierarchy
-1. **Local State**: `useState` ONLY for component-specific state
-2. **Context**: For cross-component state within a single feature
-3. **URL State**: MUST use search params for shareable state
-4. **Server State**: MUST use TanStack Query for ALL API data
-5. **Global State**: Zustand ONLY when truly needed app-wide
+### State Management Hierarchy (Demo App Specification)
+1. **Local State**: `useState` for component-specific UI state
+2. **Server State**: **RTK Query** for ALL API data (as per TDD)
+3. **Global State**: Redux store with RTK Query integration
+4. **URL State**: Workshop codes and navigation state
+5. **Session State**: Participant identity with cookie persistence (for demo reliability)
 
-### Server State Pattern (TanStack Query)
+### RTK Query Setup (TDD Pattern)
 ```typescript
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+// store/index.ts
+import { configureStore } from '@reduxjs/toolkit';
+import { sessionApi } from '../lib/api/sessionApi';
+import { organizerApi } from '../lib/api/organizerApi';
 
-function useUser(id: UserId) {
-  return useQuery({
-    queryKey: ['user', id],
-    queryFn: async () => {
-      const response = await fetch(`/api/users/${id}`);
-      
-      if (!response.ok) {
-        throw new ApiError('Failed to fetch user', response.status);
-      }
-      
-      const data = await response.json();
-      return userSchema.parse(data);
-    },
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    retry: 3,
-  });
+export const store = configureStore({
+  reducer: {
+    [sessionApi.reducerPath]: sessionApi.reducer,
+    [organizerApi.reducerPath]: organizerApi.reducer,
+  },
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware().concat(
+      sessionApi.middleware,
+      organizerApi.middleware
+    ),
+});
+
+export type RootState = ReturnType<typeof store.getState>;
+export type AppDispatch = typeof store.dispatch;
+```
+
+### Session API (Participant Features)
+```typescript
+// lib/api/sessionApi.ts
+import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+
+export const sessionApi = createApi({
+  reducerPath: 'sessionApi',
+  baseQuery: fetchBaseQuery({
+    baseUrl: process.env.NEXT_PUBLIC_API_URL,
+  }),
+  tagTypes: ['Workshop', 'State', 'Modules', 'Reactions'],
+  endpoints: (builder) => ({
+    joinWorkshop: builder.mutation<JoinResponse, JoinRequest>({
+      query: (body) => ({
+        url: '/join',
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: ['Workshop'],
+    }),
+    getWorkshopState: builder.query<StateResponse, string>({
+      query: (code) => `/w/${code}/state`,
+      providesTags: ['State'],
+      // Polling every 3 seconds (TDD requirement)
+      pollingInterval: 3000,
+    }),
+    getWorkshopModules: builder.query<ModulesResponse, string>({
+      query: (code) => `/w/${code}/modules`,
+      providesTags: ['Modules'],
+      // Polling every 3 seconds (TDD requirement)
+      pollingInterval: 3000,
+    }),
+    submitReaction: builder.mutation<ReactionResponse, ReactionRequest>({
+      query: ({ code, ...body }) => ({
+        url: `/w/${code}/react`,
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: ['Reactions'],
+    }),
+  }),
+});
+
+export const {
+  useJoinWorkshopMutation,
+  useGetWorkshopStateQuery,
+  useGetWorkshopModulesQuery,
+  useSubmitReactionMutation,
+} = sessionApi;
+```
+
+### Session Persistence (Demo App Requirement)
+```typescript
+// utils/session.ts
+import Cookies from 'js-cookie';
+import { v4 as uuidv4 } from 'uuid';
+
+export interface ParticipantSession {
+  id: string;
+  workshopCode: string;
+  name: string;
+  email?: string;
+  joinedAt: string;
 }
 
-function useUpdateUser() {
-  const queryClient = useQueryClient();
-  
-  return useMutation({
-    mutationFn: async (userData: UpdateUserData) => {
-      const response = await fetch('/api/users', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(userData),
-      });
-      
-      if (!response.ok) {
-        throw new ApiError('Failed to update user', response.status);
-      }
-      
-      return response.json();
-    },
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ['user'] });
-    },
-  });
-}
+export const useParticipantSession = (workshopCode: string) => {
+  const sessionKey = `workshop_${workshopCode}`;
+
+  const getSession = (): ParticipantSession | null => {
+    const sessionData = Cookies.get(sessionKey);
+    return sessionData ? JSON.parse(sessionData) : null;
+  };
+
+  const setSession = (name: string, email?: string): ParticipantSession => {
+    const session: ParticipantSession = {
+      id: uuidv4(),
+      workshopCode,
+      name,
+      email,
+      joinedAt: new Date().toISOString(),
+    };
+
+    Cookies.set(sessionKey, JSON.stringify(session), {
+      expires: 1, // 1 day
+      sameSite: 'strict'
+    });
+
+    return session;
+  };
+
+  const clearSession = () => {
+    Cookies.remove(sessionKey);
+  };
+
+  return { getSession, setSession, clearSession };
+};
+```
+
+### Polling Control (Demo App - Simplified)
+```typescript
+// utils/polling.ts
+export const usePollingControl = () => {
+  const [isVisible, setIsVisible] = useState(!document.hidden);
+
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      setIsVisible(!document.hidden);
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, []);
+
+  return isVisible;
+};
 ```
 
 ## 🔐 Security Requirements (MANDATORY)
@@ -569,36 +691,62 @@ export const env = envSchema.parse(process.env);
 
 ## 🚀 Performance Guidelines
 
-### Next.js 15 Optimizations
-- **Use Server Components** by default for data fetching
-- **Client Components** only when necessary (interactivity)
-- **Dynamic imports** for large client components
-- **Image optimization** with next/image
+### Next.js 15 Optimizations (Pages Router + SSR)
+- **SSR Deployment**: Server-side rendering for Heroku deployment
+- **API Routes**: Built-in API endpoints for session management
+- **Client-side optimization**: Code splitting for workshop features
+- **Image optimization** with next/image (workshop resources)
 - **Font optimization** with next/font
+- **Session management**: Cookie-based persistence
 
-### Bundle Optimization
+### SSR Configuration (Demo App Requirement)
 ```typescript
 // next.config.js
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  experimental: {
-    turbo: {
-      // Turbopack configuration
-    },
-  },
+  reactStrictMode: true,
   images: {
     formats: ['image/webp', 'image/avif'],
   },
-  // Bundle analyzer
-  webpack: (config, { dev, isServer }) => {
-    if (!dev && !isServer) {
-      config.optimization.splitChunks.chunks = 'all';
-    }
-    return config;
+  experimental: {
+    turbo: {
+      // Turbopack for development
+    },
+  },
+  // API routes enabled for session management
+  async headers() {
+    return [
+      {
+        source: '/api/:path*',
+        headers: [
+          { key: 'Access-Control-Allow-Origin', value: '*' },
+          { key: 'Access-Control-Allow-Methods', value: 'GET, POST, PUT, DELETE, OPTIONS' },
+          { key: 'Access-Control-Allow-Headers', value: 'Content-Type, Authorization' },
+        ],
+      },
+    ];
   },
 };
 
 module.exports = nextConfig;
+```
+
+### Heroku Deployment Setup (SSR)
+```json
+// package.json scripts
+{
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "heroku-postbuild": "npm run build"
+  }
+}
+```
+
+```
+// Procfile
+web: npm start
 ```
 
 ## 💅 Code Style & Quality
@@ -656,8 +804,20 @@ export default eslintConfig;
 }
 ```
 
-## ⚠️ CRITICAL GUIDELINES (MUST FOLLOW ALL)
+## ⚠️ CRITICAL GUIDELINES (Workshop Companion App)
 
+### Demo App Compliance Requirements
+1. **ENFORCE Pages Router** - NO App Router usage (TDD specification)
+2. **MANDATE RTK Query** - ALL server state through RTK Query
+3. **IMPLEMENT SSR deployment** - Build process MUST support Heroku SSR deployment
+4. **ENSURE polling control** - 3s intervals, pause when tab backgrounded
+5. **VALIDATE workshop codes** - 4-character alphanumeric validation
+6. **SUPPORT session persistence** - Cookie-based participant sessions for demo reliability
+7. **IMPLEMENT markdown rendering** - react-markdown + rehype-sanitize
+8. **ENFORCE mobile-first** - All components responsive by default
+9. **OPTIMIZE for 5-10 users** - No complex caching or scaling needed
+
+### Development Standards (MUST FOLLOW ALL)
 1. **ENFORCE strict TypeScript** - ZERO compromises on type safety
 2. **VALIDATE everything with Zod** - ALL external data must be validated
 3. **MINIMUM 80% test coverage** - NO EXCEPTIONS
