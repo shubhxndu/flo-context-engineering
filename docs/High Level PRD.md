@@ -1,9 +1,10 @@
 # PRD: Workshop Companion App
 
 ## 1. Overview
-A companion app for workshops to help participants catch up on missed content and stay aligned with the session flow.  
-- Built with Next.js (SPA) frontend and FastAPI backend.  
-- Data stored in Supabase (Postgres).  
+A companion demo app for workshops to help participants catch up on missed content and stay aligned with the session flow (5-10 concurrent users).
+- Built with Next.js (SSR) frontend and FastAPI backend.
+- Data stored in Supabase (Postgres).
+- Dark theme default with black background and white CTAs.  
 
 ## 2. Goals
 - Allow late joiners to view content they missed.  
@@ -47,12 +48,14 @@ A companion app for workshops to help participants catch up on missed content an
 - OTP/email authentication.  
 - Advanced analytics.  
 
-## 6. Technical Architecture (MVP)
-- **Frontend**: Next.js SPA.  
-- **Backend**: FastAPI.  
-- **Database**: Supabase (Postgres).  
-- **Auth**: Workshop code + name (email optional).  
-- **Sync**: REST API + periodic polling.  
+## 6. Technical Architecture (Demo App)
+- **Frontend**: Next.js SSR (Pages Router) with dark theme default.
+- **Backend**: FastAPI.
+- **Database**: Supabase (Postgres).
+- **Auth**: Workshop code + name (email optional) with session persistence.
+- **Sync**: REST API + periodic polling (3s intervals).
+- **State**: RTK Query + Redux for client state management.
+- **UI**: Tailwind CSS + shadcn/ui components, black background, white CTAs.  
 
 ## 7. Success Metrics
 - Participants can log in with workshop code and access missed/current content.  
