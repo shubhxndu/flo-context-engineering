@@ -32,10 +32,12 @@ Avoid building functionality on speculation. Implement features only when they a
 - Adding dependencies without checking existing alternatives
 
 ### Workflow Patterns
-- Preferably create tests BEFORE implementation (TDD)
+- **DEMO DEVELOPMENT FOCUS**: Prioritize working functionality over tests during initial development
+- **Testing Strategy**: Write tests AFTER core functionality is working (not TDD for demo)
 - Use "think hard" for architecture decisions
-- Break complex tasks into smaller, testable units
+- Break complex tasks into smaller, implementable units
 - Validate understanding before implementation
+- Focus on rapid prototyping and demo-ready features
 
 ### Search Command Requirements
 **CRITICAL**: Always use `rg` (ripgrep) instead of traditional `grep` and `find` commands:
@@ -321,14 +323,20 @@ function UserForm(): ReactElement {
 }
 ```
 
-## 🧪 Testing Strategy (MANDATORY REQUIREMENTS)
+## 🧪 Testing Strategy (DEMO DEVELOPMENT APPROACH)
 
-### MUST Meet These Testing Standards
-- **MINIMUM 80% code coverage** - NO EXCEPTIONS
-- **MUST co-locate tests** with components in `__tests__` folders
-- **MUST use React Testing Library** for all component tests
-- **MUST test user behavior** not implementation details
-- **MUST mock external dependencies** appropriately
+### Demo Development Testing Philosophy
+- **FOCUS ON FUNCTIONALITY FIRST**: Prioritize working features over comprehensive test coverage during initial development
+- **POST-IMPLEMENTATION TESTING**: Write tests AFTER core functionality is validated and working
+- **PRAGMATIC COVERAGE**: Aim for reasonable test coverage once features are stable (defer 80% requirement)
+- **MANUAL VALIDATION**: Use browser testing and manual validation during rapid prototyping phase
+- **FUTURE TESTING GOALS**: Plan to add comprehensive tests once demo functionality is complete
+
+### When to Write Tests (Demo Phase)
+- **Critical business logic** that handles data transformation
+- **API integration points** once they're working correctly
+- **User flows** after UI components are finalized
+- **Edge cases** discovered during manual testing
 
 ### Test Configuration (Vitest + React Testing Library)
 ```typescript
@@ -817,39 +825,45 @@ export default eslintConfig;
 8. **ENFORCE mobile-first** - All components responsive by default
 9. **OPTIMIZE for 5-10 users** - No complex caching or scaling needed
 
-### Development Standards (MUST FOLLOW ALL)
+### Development Standards (DEMO DEVELOPMENT PRIORITIES)
 1. **ENFORCE strict TypeScript** - ZERO compromises on type safety
 2. **VALIDATE everything with Zod** - ALL external data must be validated
-3. **MINIMUM 80% test coverage** - NO EXCEPTIONS
-4. **MUST co-locate related files** - Tests MUST be in `__tests__` folders
+3. **DEMO-FIRST TESTING** - Focus on working functionality, add tests after features work
+4. **PRAGMATIC FILE ORGANIZATION** - Keep related files together for demo development
 5. **MAXIMUM 500 lines per file** - Split if larger
 6. **MAXIMUM 200 lines per component** - Refactor if larger
 7. **MUST handle ALL states** - Loading, error, empty, and success
 8. **MUST use semantic commits** - feat:, fix:, docs:, refactor:, test:
-9. **MUST write complete JSDoc** - ALL exports must be documented
+9. **ESSENTIAL JSDoc** - Document public APIs and complex logic (not everything during demo phase)
 10. **NEVER use `any` type** - Use proper typing or `unknown`
-11. **MUST pass ALL automated checks** - Before ANY merge
+11. **MUST pass core checks** - TypeScript, ESLint, and build before commits
 
-## 📋 Pre-commit Checklist (MUST COMPLETE ALL)
+## 📋 Pre-commit Checklist (DEMO DEVELOPMENT ESSENTIALS)
 
+### Core Requirements (Must Pass)
 - [ ] TypeScript compiles with ZERO errors (`npm run type-check`)
-- [ ] Tests written and passing with 80%+ coverage (`npm run test:coverage`)
 - [ ] ESLint passes with ZERO warnings (`npm run lint`)
-- [ ] Prettier formatting applied (`npm run format`)
-- [ ] All components have complete JSDoc documentation
-- [ ] Zod schemas validate ALL external data
-- [ ] ALL states handled (loading, error, empty, success)
-- [ ] Error boundaries implemented for features
-- [ ] Accessibility requirements met (ARIA labels, keyboard nav)
+- [ ] App builds successfully (`npm run build`)
+- [ ] Development server starts without errors (`npm run dev`)
+
+### Code Quality (Demo Phase)
+- [ ] Essential JSDoc for public APIs and complex logic
+- [ ] Zod schemas validate external data inputs
+- [ ] Core states handled (loading, error, success)
+- [ ] Component files under 200 lines
 - [ ] No console.log statements in production code
 - [ ] Environment variables validated with Zod
-- [ ] Component files under 200 lines
-- [ ] No prop drilling beyond 2 levels
-- [ ] Server/Client components used appropriately
+
+### Future Enhancements (Post-Demo)
+- [ ] Comprehensive test coverage (80%+)
+- [ ] Complete JSDoc documentation
+- [ ] Full accessibility implementation (ARIA labels, keyboard nav)
+- [ ] Error boundaries for all features
+- [ ] Advanced state management optimization
 
 ### FORBIDDEN Practices
 - **NEVER use `any` type** (except library declaration merging with comments)
-- **NEVER skip tests** for new functionality
+- **DEMO PHASE**: Defer comprehensive testing until functionality is working
 - **NEVER ignore TypeScript errors** with `@ts-ignore`
 - **NEVER trust external data** without Zod validation
 - **NEVER use `JSX.Element`** - use `ReactElement` instead
